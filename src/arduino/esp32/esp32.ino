@@ -16,6 +16,7 @@ String nomeParametro = "vento";
 /* VARIAVEIS PARA GERAÇÃO DE DADOS */
 String uid;
 unsigned long epochTime;
+const char* ntpServer = "pool.ntp.org";
 unsigned long dataMillis = 0;
 int x = 0;
 int count2 = 23;
@@ -37,6 +38,7 @@ void setup() {
   WiFi.begin(ssid, pwd);
   uid = WiFi.macAddress();
   uid.replace(":", "");
+  configTime(0, 0, ntpServer);
   pinMode(LED,OUTPUT);
   connectWiFi();
   Serial.println("================================");
@@ -56,9 +58,9 @@ unsigned long getTime() {
 
 void loop() {
   if (WiFi.status() == WL_CONNECTED) {
-    if (millis() - dataMillis > 10000) {
+    if (millis() - dataMillis > 60000) {
       dataMillis = millis();
-
+      epochTime = getTime();
       /*URL PARA O FLASK*/
       String url = String(server) + "submitToFirebase";
       
