@@ -1,17 +1,25 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <math.h>
+#include <String.h>
 HTTPClient hpost;
 #define LED 2
 /* CONFIGURAÇÃO DA PLACA */
 /* CONFIGURAÇÕES DE CONEXÃO COM A REDE */
-char * ssid = "<REDE-WIFI>";
-char * pwd = "<SENHA-WIFI>";
+char * ssid = "<NOME-DA-REDE>";
+char * pwd = "<SENHA-DA-REDE>";
+
+class params {
+  public:
+    char nomeParametro[30];
+    int medida;
+};
+
+const int paramArrayQnt = 3;
+
+params paramList[paramArrayQnt];
 
 char * server = "http://34.195.208.67:5000/";
-
-String nomeParametro = "vento";
-
 
 /* VARIAVEIS PARA GERAÇÃO DE DADOS */
 String uid;
@@ -41,6 +49,13 @@ void setup() {
   configTime(0, 0, ntpServer);
   pinMode(LED,OUTPUT);
   connectWiFi();
+
+  strcpy(paramList[0].nomeParametro, "vento");
+
+  strcpy(paramList[1].nomeParametro, "temperatura");
+
+  strcpy(paramList[2].nomeParametro, "umidade");
+  
   Serial.println("================================");
 }
 
@@ -72,9 +87,27 @@ void loop() {
       double random_value = ((double) rand() / RAND_MAX); // gera um valor aleatório entre 0 e 1
       double result = sin(2.0 * (x + random_value)) + sin(M_PI * (x + random_value));
 
+
       /*CRIAÇÃO DO JSON*/
       hpost.addHeader("Content-Type", "application/json");
-      String data = "{\"_uid\":\"" + uid + "\",\"_unixtime\":\"" + String(epochTime) + "\",\"_nomeParametro\":\"" + nomeParametro + "\",\"_medida\":" + result + "}";
+
+      String data = "{\"_uid\": \"" + uid + "\",\"_unixtime\": \"" + String(epochTime) + "\",\"parametros\": [";
+      int dataLength = data.length() + 1;
+      char dataArray[dataLength];
+
+      data.toCharArray(dataArray, dataLength);
+      
+      for(int i = 0; i < paramArrayQnt; i++){
+        double random_value = ((double) rand() / RAND_MAX); // gera um valor aleatório entre 0 e 1
+        double result = sin(2.0 * (x + random_value)) + sin(M_PI * (x + random_value));
+        if(i == paramArrayQnt - 1){
+          data = data + "{\"_nomeParametro\": \"" + paramList[i].nomeParametro + "\",\"_medida\": " + String(result) + "}";          
+        }else{
+          data = data + "{\"_nomeParametro\": \"" + paramList[i].nomeParametro + "\",\"_medida\": " + String(result) + "},";
+        }
+      }
+
+      data = data + "]}";
       /*ENVIAR PARA O IP*/
       int httpReturn = hpost.POST(data);
     

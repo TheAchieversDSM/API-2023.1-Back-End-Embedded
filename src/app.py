@@ -13,16 +13,11 @@ def submit():
 		try:
 			json = dict(request.json)
 			new_route = "/esp32TEMP/" + json["_uid"]
-			new_data = {
-				"_unixtime": json["_unixtime"],
-				"_medida" : json["_medida"],
-				"_nomeParametro": json["_nomeParametro"]
-			}
-			firebase.post(new_route, new_data)
+			firebase.post(new_route, json)
 			return "Envio com sucesso"
 		except Exception as e: 
 			return e
 
 if __name__ == '__main__':
     # run app in debug mode on port 5000
-    app.run(debug=True, port=5000)
+    app.run(host="0.0.0.0", port=5000)
