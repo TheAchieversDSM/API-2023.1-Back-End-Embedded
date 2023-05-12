@@ -107,7 +107,7 @@ void loop() {
         }
       }
 
-      data = data + "]}";
+      data = data + "], \"enviado\": false}";
       /*ENVIAR PARA O IP*/
       int httpReturn = hpost.POST(data);
     
