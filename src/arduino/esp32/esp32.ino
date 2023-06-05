@@ -13,13 +13,14 @@ class params {
   public:
     char nomeParametro[30];
     int medida;
+    int acrescimoDeMedida;
 };
-
+int chuvaAcrescimo = 0;
 const int paramArrayQnt = 3;
 
 params paramList[paramArrayQnt];
 
-char * server = "http://34.195.208.67:5000/";
+char * server = "http://54.226.206.196:5000/";
 
 /* VARIAVEIS PARA GERAÇÃO DE DADOS */
 String uid;
@@ -50,12 +51,12 @@ void setup() {
   pinMode(LED,OUTPUT);
   connectWiFi();
 
-  strcpy(paramList[0].nomeParametro, "vento");
-
-  strcpy(paramList[1].nomeParametro, "temperatura");
-
-  strcpy(paramList[2].nomeParametro, "umidade");
-  
+  strcpy(paramList[0].nomeParametro, "temperatura");
+  paramList[0].acrescimoDeMedida = 0;
+  strcpy(paramList[1].nomeParametro, "umidade");
+  paramList[1].acrescimoDeMedida = 0;
+  strcpy(paramList[2].nomeParametro, "chuva");
+  paramList[2].acrescimoDeMedida = 1;
   Serial.println("================================");
 }
 
@@ -73,7 +74,7 @@ unsigned long getTime() {
 
 void loop() {
   if (WiFi.status() == WL_CONNECTED) {
-    if (millis() - dataMillis > 60000) {
+    if (millis() - dataMillis > 30000) {
       dataMillis = millis();
       epochTime = getTime();
       /*URL PARA O FLASK*/
@@ -99,7 +100,14 @@ void loop() {
       
       for(int i = 0; i < paramArrayQnt; i++){
         double random_value = ((double) rand() / RAND_MAX); // gera um valor aleatório entre 0 e 1
-        double result = sin(2.0 * (x + random_value)) + sin(M_PI * (x + random_value));
+        double result = 0;
+        if (paramList[i].acrescimoDeMedida == 1){
+          result = chuvaAcrescimo;
+          chuvaAcrescimo = chuvaAcrescimo + 15;
+        }else{
+          result = sin(2.0 * (x + random_value)) + sin(M_PI * (x + random_value));
+          
+        }
         if(i == paramArrayQnt - 1){
           data = data + "{\"_nomeParametro\": \"" + paramList[i].nomeParametro + "\",\"_medida\": " + String(result) + "}";          
         }else{
